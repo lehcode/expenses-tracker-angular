@@ -1,0 +1,18 @@
+{
+  "singleQuote": true,
+  "trailingComma": "all",
+  "bracketSpacing": true,
+  "proseWrap": "always",
+  "printWidth": 120,
+  "semi": false,
+  "overrides": [
+    {
+      "files": "*.ts",
+      "options": {}
+    },
+    {
+      "files": ["*.html"],
+      "options": {}
+    }
+  ]
+}

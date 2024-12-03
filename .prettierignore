@@ -1,0 +1,7 @@
+# Add files here to ignore them from prettier formatting
+e2e
+.angular
+/build
+/node_modules
+/coverage
+
