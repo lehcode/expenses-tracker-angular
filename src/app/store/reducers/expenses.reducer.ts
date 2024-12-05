@@ -95,7 +95,7 @@ export const expensesReducer = createReducer(
   })),
   on(ExpensesActions.deleteExpenseSuccess, (state, { id }) => ({
     ...state,
-    expenses: state.expenses.filter(e => e.id !== id),
+    expenses: state.expenses.filter(e => e.id !== parseInt(id)),
     loading: false
   })),
   on(ExpensesActions.deleteExpenseFailure, (state, { error }) => ({

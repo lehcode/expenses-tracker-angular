@@ -5,6 +5,7 @@ import { catchError, map, Observable, throwError } from 'rxjs'
 
 import { environment } from '../../environments/environment'
 import { IExpense, IExpenseCategory, IExpenseFilters } from '../interfaces/expenses.interfaces'
+import { filterByCategory } from '../shared/methods'
 
 @Injectable({
   providedIn: 'root'
@@ -93,9 +94,7 @@ export class ExpensesService {
     }
 
     if (filters.category) {
-      filtered = filtered.filter(expense => 
-        expense.category.id === filters.category
-      )
+      filtered = filtered.filter(expense => filterByCategory(expense, filters.category));
     }
 
     if (filters.type) {

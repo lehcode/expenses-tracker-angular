@@ -1,7 +1,7 @@
 
 
 export interface IExpense {
-  id: string
+  id: number
   name: string
   amount: number
   type: string | 'INCOME' | 'EXPENSE'
@@ -13,7 +13,7 @@ export interface IExpense {
 }
 
 export interface IExpenseCategory {
-  id: string
+  id: number
   name: string
   type: string
   color: string
@@ -47,4 +47,14 @@ export interface IExpensesState {
   selectedExpense: IExpense | null
   loading: boolean
   error: string | null
+}
+
+export interface IExpenseRow {
+  value: IExpense
+  metadata: Record<string, string>
+}
+
+export interface IExpenseCategoryRow {
+  value: IExpenseCategory
+  metadata: Record<string, string>
 }

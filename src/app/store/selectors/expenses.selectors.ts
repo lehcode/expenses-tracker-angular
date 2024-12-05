@@ -2,6 +2,7 @@ import { createFeatureSelector, createSelector } from '@ngrx/store'
 import { DateTime } from 'luxon'
 
 import { IExpensesState } from '../../interfaces/expenses.interfaces'
+import { filterByCategory } from '../../shared/methods'
 
 export const selectExpenseState = createFeatureSelector<IExpensesState>('expenses')
 
@@ -59,9 +60,7 @@ export const selectFilteredExpenses = createSelector(
 
     // Apply category filter
     if (filters.category) {
-      filtered = filtered.filter(expense => 
-        expense.category.id === filters.category
-      )
+      filtered = filtered.filter(expense => filterByCategory(expense, filters.category));
     }
 
     // Apply type filter
