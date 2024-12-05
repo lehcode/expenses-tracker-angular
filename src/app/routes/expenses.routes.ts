@@ -1,21 +1,19 @@
-import { Routes } from '@angular/router'
+import { Routes } from "@angular/router"
+
+import { ExpenseFormComponent } from "../components/expenses/expense-form.component"
+import { ExpensesViewComponent } from "../components/expenses/expenses-view.component"
 
 export const EXPENSES_ROUTES: Routes = [
   {
-    path: 'expenses',
-    children: [
-      {
-        path: '',
-        loadComponent: () => import('../components/expenses/expenses-view.component').then(m => m.ExpensesViewComponent)
-      },
-      {
-        path: 'new',
-        loadComponent: () => import('../pages/edit-expense/edit-expense.page').then(m => m.ExpenseFormPageComponent)
-      },
-      {
-        path: 'edit/:id',
-        loadComponent: () => import('../pages/edit-expense/edit-expense.page').then(m => m.ExpenseFormPageComponent)
-      }
-    ]
-  }
-]
+    path: '',
+    component: ExpensesViewComponent, 
+  },
+  {
+    path: 'new',
+    component: ExpenseFormComponent,
+  },
+  {
+    path: 'edit/:id',
+    component: ExpenseFormComponent,
+  },
+];

@@ -4,21 +4,18 @@ import { DateTime } from 'luxon'
 import { catchError, map, Observable, throwError } from 'rxjs'
 
 import { environment } from '../../environments/environment'
-import { IExpense, IExpenseCategory, IExpenseFilters, IExpenseSummary } from '../interfaces/expenses.interfaces'
+import { IExpense, IExpenseCategory, IExpenseFilters } from '../interfaces/expenses.interfaces'
 
 @Injectable({
   providedIn: 'root'
 })
 export class ExpensesService {
   private readonly apiUrl = `${environment.apiUrl}`
-  private readonly EXPENSES_KEY = 'expenses'
-  private readonly CATEGORIES_KEY = 'categories'
 
   constructor(private http: HttpClient) {}
 
-  // Expense Operations
   getExpenses(filters?: IExpenseFilters): Observable<IExpense[]> {
-    return this.http.get<IExpense[]>(`${this.apiUrl}/${this.EXPENSES_KEY}`).pipe(
+    return this.http.get<IExpense[]>(`${this.apiUrl}/expenses`).pipe(
       map(expenses => this.filterExpenses(expenses, filters)),
       map(expenses => this.transformExpenses(expenses)),
       catchError(this.handleError)
@@ -26,22 +23,22 @@ export class ExpensesService {
   }
 
   getExpenseById(id: string): Observable<IExpense> {
-    return this.http.get<IExpense>(`${this.apiUrl}/${this.EXPENSES_KEY}/${id}`).pipe(
+    return this.http.get<IExpense>(`${this.apiUrl}/expenses/${id}`).pipe(
       map(expense => this.transformExpense(expense)),
       catchError(this.handleError)
     )
   }
 
   createExpense(expense: Omit<IExpense, 'id' | 'createdAt' | 'updatedAt'>): Observable<IExpense> {
-    const now = DateTime.now()
+    const now = DateTime.now().toUTC()
     const newExpense = {
       ...expense,
-      id: crypto.randomUUID(),
+      id: `exp_${now.toMillis()}`,
       createdAt: now.toISO(),
       updatedAt: now.toISO()
     }
 
-    return this.http.post<IExpense>(`${this.apiUrl}/${this.EXPENSES_KEY}`, newExpense).pipe(
+    return this.http.post<IExpense>(`${this.apiUrl}/expenses`, newExpense).pipe(
       map(expense => this.transformExpense(expense)),
       catchError(this.handleError)
     )
@@ -50,24 +47,23 @@ export class ExpensesService {
   updateExpense(id: string, expense: Partial<IExpense>): Observable<IExpense> {
     const updatedExpense = {
       ...expense,
-      updatedAt: DateTime.now().toISO()
+      updatedAt: DateTime.now().toUTC().toISO()
     }
 
-    return this.http.patch<IExpense>(`${this.apiUrl}/${this.EXPENSES_KEY}/${id}`, updatedExpense).pipe(
+    return this.http.put<IExpense>(`${this.apiUrl}/expenses/${id}`, updatedExpense).pipe(
       map(expense => this.transformExpense(expense)),
       catchError(this.handleError)
     )
   }
 
   deleteExpense(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${this.EXPENSES_KEY}/${id}`).pipe(
+    return this.http.delete<void>(`${this.apiUrl}/expenses/${id}`).pipe(
       catchError(this.handleError)
     )
   }
 
-  // Category Operations
   getCategories(): Observable<IExpenseCategory[]> {
-    return this.http.get<IExpenseCategory[]>(`${this.apiUrl}/${this.CATEGORIES_KEY}`).pipe(
+    return this.http.get<IExpenseCategory[]>(`${this.apiUrl}/categories`).pipe(
       catchError(this.handleError)
     )
   }
@@ -75,51 +71,12 @@ export class ExpensesService {
   createCategory(category: Omit<IExpenseCategory, 'id'>): Observable<IExpenseCategory> {
     const newCategory = {
       ...category,
-      id: crypto.randomUUID()
+      id: `cat_${DateTime.now().toMillis()}`
     }
 
-    return this.http.post<IExpenseCategory>(`${this.apiUrl}/${this.CATEGORIES_KEY}`, newCategory).pipe(
+    return this.http.post<IExpenseCategory>(`${this.apiUrl}/categories`, newCategory).pipe(
       catchError(this.handleError)
     )
-  }
-
-  // Summary Operations
-  getSummary(filters?: IExpenseFilters): Observable<IExpenseSummary> {
-    return this.getExpenses(filters).pipe(
-      map(expenses => this.calculateSummary(expenses)),
-      catchError(this.handleError)
-    )
-  }
-
-  private calculateSummary(expenses: IExpense[]): IExpenseSummary {
-    const income = expenses
-      .filter(e => e.type === 'INCOME')
-      .reduce((sum, e) => sum + e.amount, 0)
-
-    const expenseTotal = expenses
-      .filter(e => e.type === 'EXPENSE')
-      .reduce((sum, e) => sum + e.amount, 0)
-
-    const categoryTotals = expenses.reduce((acc, expense) => {
-      const categoryId = expense.category.id
-      acc[categoryId] = (acc[categoryId] || 0) + expense.amount
-      return acc
-    }, {} as Record<string, number>)
-
-    const recentTransactions = [...expenses]
-      .sort((a, b) => 
-        DateTime.fromISO(b.date).toMillis() - 
-        DateTime.fromISO(a.date).toMillis()
-      )
-      .slice(0, 5)
-
-    return {
-      balance: income - expenseTotal,
-      income,
-      expenses: expenseTotal,
-      categoryTotals,
-      recentTransactions
-    }
   }
 
   private filterExpenses(expenses: IExpense[], filters?: IExpenseFilters): IExpense[] {
@@ -182,9 +139,9 @@ export class ExpensesService {
   private transformExpense(expense: IExpense): IExpense {
     return {
       ...expense,
-      date: DateTime.fromISO(expense.date).toISO(),
-      createdAt: DateTime.fromISO(expense.createdAt).toISO(),
-      updatedAt: DateTime.fromISO(expense.updatedAt).toISO()
+      date: DateTime.fromISO(expense.date).toUTC().toISO(),
+      createdAt: DateTime.fromISO(expense.createdAt).toUTC().toISO(),
+      updatedAt: DateTime.fromISO(expense.updatedAt).toUTC().toISO()
     } as IExpense
   }
 
@@ -193,7 +150,7 @@ export class ExpensesService {
   }
 
   private handleError(error: any) {
-    console.error('An error occurred:', error)
+    console.error('API Error:', error)
     return throwError(() => new Error(error.message || 'An error occurred while processing your request.'))
   }
 }
