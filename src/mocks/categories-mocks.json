@@ -1,0 +1,26 @@
+{
+  "key": "categories",
+  "metadata": {
+    "type": "IExpenseCategory"
+  },
+  "value": [
+    {
+      "id": "cat_01",
+      "name": "Groceries",
+      "type": "EXPENSE",
+      "color": "#4f46e5"
+    },
+    {
+      "id": "cat_02",
+      "name": "Salary",
+      "type": "INCOME",
+      "color": "#10b981"
+    },
+    {
+      "id": "cat_03",
+      "name": "Utilities",
+      "type": "EXPENSE",
+      "color": "#f43f5e"
+    }
+  ]
+}

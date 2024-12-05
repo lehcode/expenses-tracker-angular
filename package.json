@@ -4,8 +4,8 @@
   "scripts": {
     "ng": "ng",
     "nx": "npx nx",
-    "prestart": "nx run expense-tracker:serve:development &",
-    "start": "wrangler pages dev --kv EXPENSES_KV --live-reload",
+    "start": "nx run expense-tracker:serve:development",
+    "start-worker": "wrangler pages dev --kv EXPENSES_KV --live-reload",
     "prebuild": "nx reset",
     "build": "nx build --configuration production",
     "build-cf": "nx build --configuration production",
