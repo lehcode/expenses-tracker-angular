@@ -38,21 +38,6 @@ interface ExpenseFormData {
   template: `
     <div class="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
-        <!-- Error message -->
-        <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Amount</mat-label>
-          <input matInput type="number" formControlName="amount" placeholder="0.00" step="0.01" min="0" />
-          @if (form.get('amount')?.errors?.['required'] && form.get('amount')?.touched) {
-            <mat-error>Amount is required</mat-error>
-          }
-          @if (form.get('amount')?.errors?.['min']) {
-            <mat-error>Amount must be greater than 0</mat-error>
-          }
-          @if (form.get('amount')?.errors?.['decimalPrecision']) {
-            <mat-error>Amount must have exactly 2 decimal places</mat-error>
-          }
-        </mat-form-field>
-
         <!-- Name -->
         <mat-form-field appearance="outline" class="w-full">
           <mat-label>Name</mat-label>
