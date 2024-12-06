@@ -7,10 +7,7 @@ import { AppLayoutComponent } from './app-layout.component'
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, AppLayoutComponent],
-  template: `
-    <app-layout>
-      <router-outlet />
-    </app-layout>
+  template: `<app-layout><router-outlet /></app-layout>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
