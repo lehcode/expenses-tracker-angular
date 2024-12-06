@@ -48,6 +48,7 @@
     "@angular/compiler-cli": "^18.2.0",
     "@cloudflare/pages-plugin-cloudflare-access": "^1.0.5",
     "@cloudflare/workers-types": "^4.20241202.0",
+    "@faker-js/faker": "^9.3.0",
     "@naxodev/nx-cloudflare": "^3.1.1",
     "@nx/angular": "20.1.4",
     "@nx/eslint-plugin": "20.1.4",
