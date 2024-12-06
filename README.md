@@ -9,7 +9,6 @@ A modern, responsive web application for tracking personal finances built with A
 - 🏷️ Categorize transactions
 - 🔍 Advanced filtering and sorting capabilities
 - 📱 Responsive design for all devices
-- 🌓 Light/dark mode support
 - ⚡ Fast and reliable with Cloudflare KV storage
 
 ## Tech Stack
