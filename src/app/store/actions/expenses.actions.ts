@@ -26,13 +26,13 @@ export const ExpensesActions = createActionGroup({
     'Create Expense Failure': props<{ error: string }>(),
 
     // Update Expense
-    'Update Expense': props<{ id: string; expense: Partial<IExpense> }>(),
+    'Update Expense': props<{ id: number; expense: Partial<IExpense> }>(),
     'Update Expense Success': props<{ expense: IExpense }>(),
     'Update Expense Failure': props<{ error: string }>(),
 
     // Delete Expense
-    'Delete Expense': props<{ id: string }>(),
-    'Delete Expense Success': props<{ id: string }>(),
+    'Delete Expense': props<{ id: number }>(),
+    'Delete Expense Success': props<{ id: number }>(),
     'Delete Expense Failure': props<{ error: string }>(),
 
     // Load Summary

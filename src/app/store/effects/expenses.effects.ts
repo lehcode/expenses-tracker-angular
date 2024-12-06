@@ -10,6 +10,14 @@ import { selectFilters } from '../selectors/expenses.selectors'
 
 @Injectable()
 export class ExpensesEffects {
+  /**
+   * Constructs an instance of ExpensesEffects.
+   * 
+   * @param actions$ - Observable stream of dispatched actions.
+   * @param expensesService - Service to interact with expense-related API endpoints.
+   * @param store - NgRx store to select and dispatch actions.
+   * @param snackBar - Material service to display notifications.
+   */
   constructor(
     private actions$: Actions,
     private expensesService: ExpensesService,
@@ -97,18 +105,18 @@ export class ExpensesEffects {
   })
 
   // Load Summary
-  // loadSummary$ = createEffect(() => {
-  //   return this.actions$.pipe(
-  //     ofType(ExpensesActions.loadSummary),
-  //     withLatestFrom(this.store.select(selectFilters)),
-  //     switchMap(([action, storeFilters]) =>
-  //       this.expensesService.getSummary({ ...storeFilters, ...action.filters }).pipe(
-  //         map(summary => ExpensesActions.loadSummarySuccess({ summary })),
-  //         catchError(error => of(ExpensesActions.loadSummaryFailure({ error: error.message })))
-  //       )
-  //     )
-  //   )
-  // })
+  loadSummary$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ExpensesActions.loadSummary),
+      withLatestFrom(this.store.select(selectFilters)),
+      switchMap(([action, storeFilters]) =>
+        this.expensesService.getSummary({ ...storeFilters, ...action.filters }).pipe(
+          map(summary => ExpensesActions.loadSummarySuccess({ summary })),
+          catchError(error => of(ExpensesActions.loadSummaryFailure({ error: error.message })))
+        )
+      )
+    )
+  })
 
   // Create Category
   createCategory$ = createEffect(() => {
