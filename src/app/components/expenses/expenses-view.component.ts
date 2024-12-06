@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, OnChanges, OnInit } from '@angular/core'
+import { Component, OnInit } from '@angular/core'
 import { MatCard, MatCardContent } from '@angular/material/card'
 import { MatDialog } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
@@ -109,7 +109,7 @@ import { ExpenseFormComponent } from './expense-form.component'
     `,
   ],
 })
-export class ExpensesViewComponent implements OnInit, OnChanges {
+export class ExpensesViewComponent implements OnInit {
   expenses$: Observable<IExpense[]>
   loading$ = this.store.select(selectExpensesLoading)
   error$ = this.store.select(selectExpensesError)
