@@ -55,26 +55,28 @@ import { ExpenseFormComponent } from './expense-form.component'
           <!-- Expense Card -->
           <div
             *ngFor="let row of expenses$ | async; let i = index"
-            class="mb-4 cursor-pointer hover:shadow-lg transition-shadow"
+            class="mb-4"
             [@cardAnimation]
           >
-            <mat-card
-              class="expense-card relative bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-all duration-300 ease-in-out"
-              [class.selected]="selectedRow?.id === row.id"
-              (click)="selectRow(row)"
-              (keyup.enter)="selectRow(row)"
-              tabindex="i"
-            >
-              <mat-card-content class="flex justify-between items-center p-4">
-                <div>
-                  <h3 class="text-lg font-medium">{{ row.name }}</h3>
-                  <p class="text-gray-600">{{ row.date | date }}</p>
-                </div>
-                <div [ngClass]="row.type === 'EXPENSE' ? 'text-red-500' : 'text-green-500'">
-                  {{ row.type === 'EXPENSE' ? '-' : '+' }} USD{{ row.amount | currency }}
-                </div>
-              </mat-card-content>
-            </mat-card>
+            <div class="cursor-pointer hover:shadow-lg transition-shadow">
+              <mat-card
+                class="expense-card relative bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-all duration-300 ease-in-out"
+                [class.selected]="selectedRow?.id === row.id"
+                (click)="selectRow(row)"
+                (keyup.enter)="selectRow(row)"
+                tabindex="i"
+              >
+                <mat-card-content class="flex justify-between items-center p-4">
+                  <div>
+                    <h3 class="text-lg font-medium">{{ row.name }}</h3>
+                    <p class="text-gray-600">{{ row.date | date }}</p>
+                  </div>
+                  <div [ngClass]="row.type === 'EXPENSE' ? 'text-red-500' : 'text-green-500'">
+                    {{ row.type === 'EXPENSE' ? '-' : '+' }} USD{{ row.amount | currency }}
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
           </div>
         </div>
 
