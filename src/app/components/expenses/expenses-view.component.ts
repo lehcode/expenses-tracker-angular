@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, OnChanges, OnInit, SimpleChanges } from '@angular/core'
+import { Component, OnChanges, OnInit } from '@angular/core'
 import { MatCard, MatCardContent } from '@angular/material/card'
 import { MatDialog } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
@@ -135,10 +135,6 @@ export class ExpensesViewComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     this.store.dispatch(ExpensesActions.loadExpenses({}))
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-    debugger
   }
 
   selectRow(row: IExpense) {
