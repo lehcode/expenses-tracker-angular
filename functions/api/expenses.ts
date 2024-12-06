@@ -49,13 +49,13 @@ export const onRequest = async (context: {
       case 'GET': {
         if (isListEndpoint) {
           // Get all expense IDs
-          const idsJson = await env.EXPENSES_KV.get('expense_ids')
-          const ids = idsJson ? JSON.parse(idsJson) : []
+          const keysJson = await env.EXPENSES_KV.get('_ids')
+          const keys = keysJson ? JSON.parse(keysJson) : []
 
           // Fetch all expenses
           const expenses = await Promise.all(
-            ids.map(async (expenseId: string) => {
-              const expenseJson = await env.EXPENSES_KV.get(`expense:${expenseId}`)
+            keys.map(async (key: string) => {
+              const expenseJson = await env.EXPENSES_KV.get(key)
               return expenseJson ? JSON.parse(expenseJson) : null
             })
           )
@@ -68,7 +68,7 @@ export const onRequest = async (context: {
           })
         } else {
           // Get single expense
-          const expense = await env.EXPENSES_KV.get(`expense:${id}`)
+          const expense = await env.EXPENSES_KV.get(`exp_${id}`)
           if (!expense) {
             return new Response(
               JSON.stringify({ error: 'Expense not found' }),
@@ -84,13 +84,13 @@ export const onRequest = async (context: {
         const expenseId = expense.id
 
         // Store the expense
-        await env.EXPENSES_KV.put(`expense:${expenseId}`, JSON.stringify(expense))
+        await env.EXPENSES_KV.put(`exp_${expenseId}`, JSON.stringify(expense))
 
         // Update the list of expense IDs
-        const idsJson = await env.EXPENSES_KV.get('expense_ids')
+        const idsJson = await env.EXPENSES_KV.get('_ids')
         const ids = idsJson ? JSON.parse(idsJson) : []
         ids.push(expenseId)
-        await env.EXPENSES_KV.put('expense_ids', JSON.stringify(ids))
+        await env.EXPENSES_KV.put('_ids', JSON.stringify(ids))
 
         return new Response(JSON.stringify(expense), {
           status: 201,
@@ -102,7 +102,7 @@ export const onRequest = async (context: {
         const updates = await request.json()
         
         // Get existing expense
-        const existingExpenseJson = await env.EXPENSES_KV.get(`expense:${id}`)
+        const existingExpenseJson = await env.EXPENSES_KV.get(`exp_${id}`)
         if (!existingExpenseJson) {
           return new Response(
             JSON.stringify({ error: 'Expense not found' }),
@@ -114,7 +114,7 @@ export const onRequest = async (context: {
         const updatedExpense = { ...existingExpense, ...updates }
         
         // Store updated expense
-        await env.EXPENSES_KV.put(`expense:${id}`, JSON.stringify(updatedExpense))
+        await env.EXPENSES_KV.put(`exp_${id}`, JSON.stringify(updatedExpense))
 
         return new Response(JSON.stringify(updatedExpense), {
           headers: jsonHeaders
@@ -123,14 +123,14 @@ export const onRequest = async (context: {
 
       case 'DELETE': {
         // Delete the expense
-        await env.EXPENSES_KV.delete(`expense:${id}`)
+        await env.EXPENSES_KV.delete(`exp_${id}`)
 
         // Update the list of expense IDs
-        const idsJson = await env.EXPENSES_KV.get('expense_ids')
+        const idsJson = await env.EXPENSES_KV.get('_ids')
         if (idsJson) {
           const ids = JSON.parse(idsJson)
           const updatedIds = ids.filter((expenseId: string) => expenseId !== id)
-          await env.EXPENSES_KV.put('expense_ids', JSON.stringify(updatedIds))
+          await env.EXPENSES_KV.put('_ids', JSON.stringify(updatedIds))
         }
 
         return new Response(null, {
