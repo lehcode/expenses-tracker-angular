@@ -1,6 +1,6 @@
 import { animate, query, stagger, style, transition, trigger } from '@angular/animations'
 import { CommonModule } from '@angular/common'
-import { Component, OnInit } from '@angular/core'
+import { Component, HostListener, OnInit } from '@angular/core'
 import { MatCard, MatCardContent } from '@angular/material/card'
 import { MatDialog } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
@@ -37,16 +37,26 @@ import { ExpensesFilterComponent } from './expenses-filter.component'
     BalanceSummaryComponent,
   ],
   template: `
-    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <!-- Header Section -->
-      <div class="container mx-auto px-4 py-6">
-        <div class="bg-white dark:bg-gray-800 shadow-sm">
+    <div class="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      <!-- Fixed Header Section -->
+      <div class="header-section sticky top-0 bg-white dark:bg-gray-800 shadow-sm">
+        <div class="container mx-auto px-4 py-3">
           <h1 class="text-2xl font-bold">Expenses</h1>
-          <!-- <button mat-raised-button color="primary" (click)="onAddNew()">Add New Expense</button> -->
+        </div>
+        
+        <!-- Totals Section - Hidden on Scroll -->
+        <div class="container mx-auto px-4" [class.hidden]="isScrolled">
+          <app-balance-summary></app-balance-summary>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="container mx-auto px-4">
+          <app-expenses-filter></app-expenses-filter>
         </div>
       </div>
 
-      <div class="container mx-auto px-4 py-6">
+      <!-- Scrollable Content -->
+      <div class="flex-1 container mx-auto px-4 py-3 overflow-auto">
         <!-- Loading State -->
         <div class="flex justify-center p-8" *ngIf="loading$ | async">
           <mat-spinner></mat-spinner>
@@ -58,14 +68,6 @@ import { ExpensesFilterComponent } from './expenses-filter.component'
           *ngIf="error$ | async as error"
         >
           {{ error }}
-        </div>
-
-        <div class="px-4 py-2">
-          <app-balance-summary></app-balance-summary>
-        </div>
-
-        <div class="px-4 py-2">
-          <app-expenses-filter></app-expenses-filter>
         </div>
 
         <div
@@ -128,8 +130,9 @@ import { ExpensesFilterComponent } from './expenses-filter.component'
   `,
   styles: [
     `
-      :host {
-        display: block;
+      .header-section {
+        z-index: 65535;
+        background: #F9FAFB;
       }
     `,
   ],
@@ -165,18 +168,16 @@ export class ExpensesViewComponent implements OnInit {
   expenses$: Observable<IExpense[]>
   loading$ = this.store.select(selectExpensesLoading)
   error$ = this.store.select(selectExpensesError)
+  isScrolled = false
 
   title = 'Expenses'
   selectedRow: IExpense | null = null
 
-  /**
-   * @constructor
-   * @param router - The angular router
-   * @param store - The ngrx store
-   *
-   * This constructor sets up the component to select all expenses from the store
-   * when the component is initialized.
-   */
+  @HostListener('window:scroll', ['$event'])
+  onScroll() {
+    this.isScrolled = window.scrollY > 100
+  }
+
   constructor(
     private router: Router,
     private store: Store,
@@ -191,7 +192,6 @@ export class ExpensesViewComponent implements OnInit {
 
   selectRow(row: IExpense) {
     this.selectedRow = this.selectedRow?.id === row.id ? null : row
-    console.log(this.selectedRow)
   }
 
   onAddNew() {

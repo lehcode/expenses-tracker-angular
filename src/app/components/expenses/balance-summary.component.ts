@@ -12,7 +12,7 @@ import { selectTotalBalance, selectTotalExpenses, selectTotalIncome } from '../.
   template: `
     <div class="flex flex-wrap gap-4 mb-4">
       <!-- Total Balance -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm flex-grow">
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-4 flex-grow">
         <div class="flex justify-between items-baseline">
           <p class="text-lg font-medium text-gray-700 dark:text-gray-300">Total Balance</p>
           <span [class]="(balance$ | async)! >= 0 ? 'text-emerald-500' : 'text-rose-500'" class="text-2xl font-semibold">
@@ -22,7 +22,7 @@ import { selectTotalBalance, selectTotalExpenses, selectTotalIncome } from '../.
       </div>
 
       <!-- Total Income -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm flex-grow">
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-4 flex-grow">
         <div class="flex justify-between items-baseline">
           <p class="text-lg font-medium text-gray-700 dark:text-gray-300">Total Income</p>
           <span class="text-2xl font-semibold text-emerald-500">
@@ -32,7 +32,7 @@ import { selectTotalBalance, selectTotalExpenses, selectTotalIncome } from '../.
       </div>
 
       <!-- Total Expenses -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm flex-grow">
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-4 flex-grow">
         <div class="flex justify-between items-baseline">
           <p class="text-lg font-medium text-gray-700 dark:text-gray-300">Total Expenses</p>
           <span class="text-2xl font-semibold text-rose-500">
