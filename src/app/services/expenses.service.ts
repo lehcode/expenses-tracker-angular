@@ -4,19 +4,22 @@ import { DateTime } from 'luxon'
 import { catchError, map, Observable, throwError } from 'rxjs'
 
 import { environment } from '../../environments/environment'
-import { IExpense, IExpenseCategory, IExpenseFilters } from '../interfaces/expenses.interfaces'
+import { IExpense, IExpenseCategory, IExpenseFilters, IExpenseRow, IExpenseSummary } from '../interfaces/expenses.interfaces'
 import { filterByCategory } from '../shared/methods'
 
 @Injectable({
   providedIn: 'root'
 })
 export class ExpensesService {
+  getSummary(arg0: { search?: string; category?: string; type?: string; dateRange?: { start?: string; end?: string }; sortBy?: "date" | "amount"; sortOrder?: "asc" | "desc" }): Observable<IExpenseSummary> {
+    throw new Error('Method not implemented.')
+  }
   private readonly apiUrl = `${environment.apiUrl}`
 
   constructor(private http: HttpClient) {}
 
   getExpenses(filters?: IExpenseFilters): Observable<IExpense[]> {
-    return this.http.get<IExpense[]>(`${this.apiUrl}/expenses`).pipe(
+    return this.http.get<IExpenseRow[]>(`${this.apiUrl}/expenses`).pipe(
       map(expenses => this.filterExpenses(expenses, filters)),
       map(expenses => this.transformExpenses(expenses)),
       catchError(this.handleError)
@@ -45,7 +48,7 @@ export class ExpensesService {
     )
   }
 
-  updateExpense(id: string, expense: Partial<IExpense>): Observable<IExpense> {
+  updateExpense(id: number, expense: Partial<IExpense>): Observable<IExpense> {
     const updatedExpense = {
       ...expense,
       updatedAt: DateTime.now().toUTC().toISO()
@@ -57,7 +60,7 @@ export class ExpensesService {
     )
   }
 
-  deleteExpense(id: string): Observable<void> {
+  deleteExpense(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/expenses/${id}`).pipe(
       catchError(this.handleError)
     )
@@ -80,10 +83,12 @@ export class ExpensesService {
     )
   }
 
-  private filterExpenses(expenses: IExpense[], filters?: IExpenseFilters): IExpense[] {
-    if (!filters) return expenses
+  private filterExpenses(expenses: IExpenseRow[], filters?: IExpenseFilters): IExpense[] {
+    const mapped = expenses.map(expense => expense.value)
 
-    let filtered = [...expenses]
+    if (!filters) return mapped
+
+    let filtered = [...mapped]
 
     if (filters.search) {
       const searchLower = filters.search.toLowerCase()
@@ -144,6 +149,13 @@ export class ExpensesService {
     } as IExpense
   }
 
+  /**
+   * Takes an array of expenses and transforms each expense by converting
+   * the date, createdAt, and updatedAt fields to UTC ISO strings.
+   * 
+   * @param expenses The array of expenses to transform.
+   * @returns The transformed array of expenses.
+   */
   private transformExpenses(expenses: IExpense[]): IExpense[] {
     return expenses.map(expense => this.transformExpense(expense))
   }
