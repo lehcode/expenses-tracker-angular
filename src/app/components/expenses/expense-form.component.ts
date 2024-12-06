@@ -10,7 +10,7 @@ import { MatInputModule } from '@angular/material/input'
 import { MatSelectModule } from '@angular/material/select'
 import { Store } from '@ngrx/store'
 import { DateTime } from 'luxon'
-import { Observable } from 'rxjs'
+import { Observable, of } from 'rxjs'
 
 import type { IExpense, IExpenseCategory } from '../../interfaces/expenses.interfaces'
 import { emptyExpense } from '../../shared/hydrate'
@@ -166,7 +166,7 @@ export class ExpenseFormComponent implements OnInit {
     }
   }
 
-  onSubmit(): void {
+  onSubmit(): Observable<IExpense | undefined> {
     if (this.form.valid) {
       const formValue = this.form.value
       const expenseData = {
@@ -195,6 +195,8 @@ export class ExpenseFormComponent implements OnInit {
 
       this.dialogRef.close(true)
     }
+
+    return of(this.data?.expense)
   }
 
   onCancel(): void {

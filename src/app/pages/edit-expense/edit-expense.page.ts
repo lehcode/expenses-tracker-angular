@@ -21,7 +21,7 @@ import { ExpensesActions } from '../../store/actions/expenses.actions'
         </a>
       </div>
 
-      <app-expense-form [selectedExpense]="expense" (cancelEdit)="onCancel()"></app-expense-form>
+      <app-expense-form [selectedExpense]="expense" (saveExpense)="router.navigate(['/expenses'])"></app-expense-form>
     </div>
   `,
   imports: [ExpenseFormComponent, MatButtonModule, MatIconModule, RouterLink],
@@ -43,28 +43,5 @@ export class ExpenseFormPageComponent implements OnInit {
       this.isEditMode = true
       this.store.dispatch(ExpensesActions.loadExpenseById({ id }))
     }
-  }
-
-  // onSave(expense: Partial<IExpense>) {
-  //   if (this.isEditMode && this.expense?.id) {
-  //     this.store.dispatch(
-  //       ExpensesActions.updateExpense({
-  //         id: this.expense.id,
-  //         expense,
-  //       }),
-  //     )
-  //   } else {
-  //     this.store.dispatch(
-  //       ExpensesActions.createExpense({
-  //         expense: expense as Omit<IExpense, 'id' | 'createdAt' | 'updatedAt'>,
-  //       }),
-  //     )
-  //   }
-    
-  //   this.router.navigate(['/expenses'])
-  // }
-
-  onCancel() {
-    this.router.navigate(['/expenses'])
   }
 }
