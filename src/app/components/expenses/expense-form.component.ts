@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, Inject, Input, OnInit, Output } from '@angular/core'
+import { ChangeDetectionStrategy, Component, Inject, OnInit } from '@angular/core'
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatDatepickerModule } from '@angular/material/datepicker'
@@ -10,12 +10,16 @@ import { MatInputModule } from '@angular/material/input'
 import { MatSelectModule } from '@angular/material/select'
 import { Store } from '@ngrx/store'
 import { DateTime } from 'luxon'
-import { Observable, of } from 'rxjs'
+import { Observable } from 'rxjs'
 
 import type { IExpense, IExpenseCategory } from '../../interfaces/expenses.interfaces'
-import { emptyExpense } from '../../shared/hydrate'
 import { ExpensesActions } from '../../store/actions/expenses.actions'
-import { selectCategories, selectSelectedExpense } from '../../store/selectors/expenses.selectors'
+import { selectCategories } from '../../store/selectors/expenses.selectors'
+
+interface ExpenseFormData {
+  expense?: IExpense;
+  isEditMode?: boolean;
+}
 
 @Component({
   selector: 'app-expense-form',
@@ -116,20 +120,19 @@ import { selectCategories, selectSelectedExpense } from '../../store/selectors/e
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExpenseFormComponent implements OnInit {
-  @Input() selectedExpense: Omit<IExpense, 'id' | 'createdAt' | 'updatedAt'> = emptyExpense
-  @Output() saveExpense = this.onSubmit.bind(this)
-
-  form: FormGroup
-  categories$: Observable<IExpenseCategory[]>
-  selectedExpense$: Observable<IExpense | null>
-  isEditMode = false
+  form: FormGroup;
+  categories$: Observable<IExpenseCategory[]>;
+  isEditMode = false;
 
   constructor(
     private fb: FormBuilder,
     private store: Store,
     private dialogRef: MatDialogRef<ExpenseFormComponent>,
-    @Inject(MAT_DIALOG_DATA) public data?: { expense: IExpense },
+    @Inject(MAT_DIALOG_DATA) public data: ExpenseFormData
   ) {
+    this.categories$ = this.store.select(selectCategories);
+    this.isEditMode = !!data?.expense;
+    
     this.form = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       amount: [null, [Validators.required, Validators.min(0)]],
@@ -137,38 +140,31 @@ export class ExpenseFormComponent implements OnInit {
       category: [null, Validators.required],
       date: [new Date(), Validators.required],
       notes: [''],
-    })
-    this.categories$ = this.store.select(selectCategories)
-    this.selectedExpense$ = this.store.select(selectSelectedExpense)
-  }
+    });
 
-  ngOnInit() {
-    // Load categories
-    this.store.dispatch(ExpensesActions.loadCategories())
-
-    if (this.data?.expense) {
-      this.isEditMode = true
-      this.store.dispatch(ExpensesActions.loadExpenseById({ id: this.data?.expense.id.toString() }))
-
-      this.selectedExpense$.subscribe((expense) => {
-        if (expense) {
-          this.selectedExpense = {
-            name: expense.name,
-            amount: expense.amount,
-            type: expense.type,
-            category: expense.category,
-            date: DateTime.fromISO(expense.date).toJSDate().toISOString(),
-            notes: expense.notes,
-          }
-          this.form.patchValue(this.selectedExpense)
-        }
-      })
+    if (this.isEditMode && data.expense) {
+      this.initializeFormWithExpense(data.expense);
     }
   }
 
-  onSubmit(): Observable<IExpense | undefined> {
+  ngOnInit() {
+    this.store.dispatch(ExpensesActions.loadCategories());
+  }
+
+  private initializeFormWithExpense(expense: IExpense) {
+    this.form.patchValue({
+      name: expense.name,
+      amount: expense.amount,
+      type: expense.type,
+      category: expense.category,
+      date: DateTime.fromISO(expense.date).toJSDate(),
+      notes: expense.notes,
+    });
+  }
+
+  onSubmit() {
     if (this.form.valid) {
-      const formValue = this.form.value
+      const formValue = this.form.value;
       const expenseData = {
         name: formValue.name,
         amount: Number(formValue.amount),
@@ -176,30 +172,28 @@ export class ExpenseFormComponent implements OnInit {
         category: formValue.category,
         date: DateTime.fromJSDate(formValue.date).toUTC().toISO() as string,
         notes: formValue.notes,
-      }
+      };
 
       if (this.isEditMode && this.data?.expense) {
         this.store.dispatch(
           ExpensesActions.updateExpense({
-            id: this.data?.expense.id,
+            id: this.data.expense.id,
             expense: expenseData,
-          }),
-        )
+          })
+        );
       } else {
         this.store.dispatch(
           ExpensesActions.createExpense({
             expense: expenseData,
-          }),
-        )
+          })
+        );
       }
 
-      this.dialogRef.close(true)
+      this.dialogRef.close(true);
     }
-
-    return of(this.data?.expense)
   }
 
   onCancel(): void {
-    this.dialogRef.close(true)
+    this.dialogRef.close(false);
   }
 }

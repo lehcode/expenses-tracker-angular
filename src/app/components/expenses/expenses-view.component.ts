@@ -1,3 +1,4 @@
+import { animate, query, stagger, style, transition, trigger } from '@angular/animations'
 import { CommonModule } from '@angular/common'
 import { Component, OnInit } from '@angular/core'
 import { MatCard, MatCardContent } from '@angular/material/card'
@@ -17,13 +18,24 @@ import {
 } from '../../store/selectors/expenses.selectors'
 import { FabMenuComponent } from '../nav/fab-menu.component'
 
-import { DeleteExpenseDialogComponent } from './delete-expense.component'
+import { BalanceSummaryComponent } from './balance-summary.component'
+import { DeleteExpenseDialogComponent } from './delete-expense-dialog.component'
 import { ExpenseFormComponent } from './expense-form.component'
+import { ExpensesFilterComponent } from './expenses-filter.component'
 
 @Component({
   selector: 'app-expense-view',
   standalone: true,
-  imports: [CommonModule, MatCard, MatCardContent, MatIconModule, MatProgressSpinnerModule, FabMenuComponent],
+  imports: [
+    CommonModule,
+    MatCard,
+    MatCardContent,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    FabMenuComponent,
+    ExpensesFilterComponent,
+    BalanceSummaryComponent,
+  ],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <!-- Header Section -->
@@ -48,16 +60,21 @@ import { ExpenseFormComponent } from './expense-form.component'
           {{ error }}
         </div>
 
+        <div class="px-4 py-2">
+          <app-balance-summary></app-balance-summary>
+        </div>
+
+        <div class="px-4 py-2">
+          <app-expenses-filter></app-expenses-filter>
+        </div>
+
         <div
-          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
           *ngIf="(loading$ | async) === false"
+          [@staggerAnimation]="(expenses$ | async)?.length"
         >
-          <!-- Expense Card -->
-          <div
-            *ngFor="let row of expenses$ | async; let i = index"
-            class="mb-4"
-            [@cardAnimation]
-          >
+          <!-- Expense Cards -->
+          <div *ngFor="let row of expenses$ | async; let i = index" class="w-full mb-4 col-span-4" [@cardAnimation]>
             <div class="cursor-pointer hover:shadow-lg transition-shadow">
               <mat-card
                 class="expense-card relative bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-all duration-300 ease-in-out"
@@ -65,15 +82,23 @@ import { ExpenseFormComponent } from './expense-form.component'
                 (click)="selectRow(row)"
                 (keyup.enter)="selectRow(row)"
                 tabindex="i"
+                [ngStyle]="{ 'border-left': '4px solid ' + row.category.color }"
               >
-                <mat-card-content class="flex justify-between items-center p-4">
-                  <div>
-                    <h3 class="text-lg font-medium">{{ row.name }}</h3>
-                    <p class="text-gray-600">{{ row.date | date }}</p>
+                <mat-card-content class="p-4">
+                  <!-- Category -->
+                  <p class="text-sm text-gray-600 mb-1">{{ row.category.name }}</p>
+                  <!-- Name and Amount on same line -->
+                  <div class="flex justify-between items-center gap-4 mb-1">
+                    <h3 class="text-2xl font-normal truncate">{{ row.name }}</h3>
+                    <span
+                      [ngClass]="row.type === 'EXPENSE' ? 'text-red-500' : 'text-green-500'"
+                      class="text-xl whitespace-nowrap"
+                    >
+                      {{ row.type === 'EXPENSE' ? '- ' : '+ ' }}{{ row.amount | currency: 'USD' : 'symbol' : '1.2-2' }}
+                    </span>
                   </div>
-                  <div [ngClass]="row.type === 'EXPENSE' ? 'text-red-500' : 'text-green-500'">
-                    {{ row.type === 'EXPENSE' ? '-' : '+' }} USD{{ row.amount | currency }}
-                  </div>
+                  <!-- Date -->
+                  <p class="text-sm text-gray-600">{{ row.date | date: 'mediumDate' }}</p>
                 </mat-card-content>
               </mat-card>
             </div>
@@ -107,6 +132,33 @@ import { ExpenseFormComponent } from './expense-form.component'
         display: block;
       }
     `,
+  ],
+  animations: [
+    trigger('fadeAnimation', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(20px)' }),
+        animate('400ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })),
+      ]),
+      transition(':leave', [animate('400ms ease-in', style({ opacity: 0, transform: 'translateY(20px)' }))]),
+    ]),
+    trigger('cardAnimation', [
+      transition(':enter', [
+        style({ opacity: 1, transform: 'translateY(30px)' }),
+        animate('500ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })),
+      ]),
+    ]),
+    trigger('staggerAnimation', [
+      transition('* => *', [
+        query(
+          ':enter',
+          [
+            style({ opacity: 0, transform: 'translateY(30px)' }),
+            stagger('100ms', [animate('250ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))]),
+          ],
+          { optional: true },
+        ),
+      ]),
+    ]),
   ],
 })
 export class ExpensesViewComponent implements OnInit {
@@ -162,9 +214,13 @@ export class ExpensesViewComponent implements OnInit {
     })
   }
 
-  openEditDialog(data: IExpense): void {
+  openEditDialog(expense: IExpense): void {
     const dialogRef = this.dialog.open(ExpenseFormComponent, {
-      data: { ...data },
+      data: {
+        expense: expense,
+        isEditMode: true,
+      },
+      width: '600px',
       disableClose: true,
     })
 
@@ -176,10 +232,12 @@ export class ExpensesViewComponent implements OnInit {
     })
   }
 
-  openDeleteDialog(row: IExpense): void {
+  openDeleteDialog(expense: IExpense): void {
     const dialogRef = this.dialog.open(DeleteExpenseDialogComponent, {
-      data: { ...row },
-      // width: '400px',
+      data: { expense },
+      width: '500px',
+      disableClose: true,
+      panelClass: 'confirm-dialog-container',
     })
 
     dialogRef.afterClosed().subscribe((result) => {

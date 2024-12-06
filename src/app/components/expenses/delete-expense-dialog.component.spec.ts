@@ -3,7 +3,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
 
 import { IExpense } from '../../interfaces/expenses.interfaces'
 
-import { DeleteExpenseDialogComponent } from './delete-expense.component'
+import { DeleteExpenseDialogComponent } from './delete-expense-dialog.component'
 
 describe('DeleteExpenseDialogComponent', () => {
   let component: DeleteExpenseDialogComponent
