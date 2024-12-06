@@ -130,8 +130,8 @@ import { ExpensesFilterComponent } from './expenses-filter.component'
   `,
   styles: [
     `
-      .header-section {
-        z-index: 65535;
+      :host ::ng-deep .header-section {
+        z-index: 900;
         background: #F9FAFB;
       }
     `,

@@ -13,12 +13,13 @@ import { DateTime } from 'luxon'
 import { Observable } from 'rxjs'
 
 import type { IExpense, IExpenseCategory } from '../../interfaces/expenses.interfaces'
+import { decimalPrecisionValidator } from '../../shared/validators'
 import { ExpensesActions } from '../../store/actions/expenses.actions'
 import { selectCategories } from '../../store/selectors/expenses.selectors'
 
 interface ExpenseFormData {
-  expense?: IExpense;
-  isEditMode?: boolean;
+  expense?: IExpense
+  isEditMode?: boolean
 }
 
 @Component({
@@ -37,6 +38,21 @@ interface ExpenseFormData {
   template: `
     <div class="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
+        <!-- Error message -->
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Amount</mat-label>
+          <input matInput type="number" formControlName="amount" placeholder="0.00" step="0.01" min="0" />
+          @if (form.get('amount')?.errors?.['required'] && form.get('amount')?.touched) {
+            <mat-error>Amount is required</mat-error>
+          }
+          @if (form.get('amount')?.errors?.['min']) {
+            <mat-error>Amount must be greater than 0</mat-error>
+          }
+          @if (form.get('amount')?.errors?.['decimalPrecision']) {
+            <mat-error>Amount must have exactly 2 decimal places</mat-error>
+          }
+        </mat-form-field>
+
         <!-- Name -->
         <mat-form-field appearance="outline" class="w-full">
           <mat-label>Name</mat-label>
@@ -120,35 +136,35 @@ interface ExpenseFormData {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExpenseFormComponent implements OnInit {
-  form: FormGroup;
-  categories$: Observable<IExpenseCategory[]>;
-  isEditMode = false;
+  form: FormGroup
+  categories$: Observable<IExpenseCategory[]>
+  isEditMode = false
 
   constructor(
     private fb: FormBuilder,
     private store: Store,
     private dialogRef: MatDialogRef<ExpenseFormComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: ExpenseFormData
+    @Inject(MAT_DIALOG_DATA) public data: ExpenseFormData,
   ) {
-    this.categories$ = this.store.select(selectCategories);
-    this.isEditMode = !!data?.expense;
-    
+    this.categories$ = this.store.select(selectCategories)
+    this.isEditMode = !!data?.expense
+
     this.form = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
-      amount: [null, [Validators.required, Validators.min(0)]],
+      amount: [null, [Validators.required, Validators.min(0), decimalPrecisionValidator(2)]],
       type: ['EXPENSE', Validators.required],
       category: [null, Validators.required],
       date: [new Date(), Validators.required],
       notes: [''],
-    });
+    })
 
     if (this.isEditMode && data.expense) {
-      this.initializeFormWithExpense(data.expense);
+      this.initializeFormWithExpense(data.expense)
     }
   }
 
   ngOnInit() {
-    this.store.dispatch(ExpensesActions.loadCategories());
+    this.store.dispatch(ExpensesActions.loadCategories())
   }
 
   private initializeFormWithExpense(expense: IExpense) {
@@ -159,12 +175,12 @@ export class ExpenseFormComponent implements OnInit {
       category: expense.category,
       date: DateTime.fromISO(expense.date).toJSDate(),
       notes: expense.notes,
-    });
+    })
   }
 
   onSubmit() {
     if (this.form.valid) {
-      const formValue = this.form.value;
+      const formValue = this.form.value
       const expenseData = {
         name: formValue.name,
         amount: Number(formValue.amount),
@@ -172,28 +188,28 @@ export class ExpenseFormComponent implements OnInit {
         category: formValue.category,
         date: DateTime.fromJSDate(formValue.date).toUTC().toISO() as string,
         notes: formValue.notes,
-      };
+      }
 
       if (this.isEditMode && this.data?.expense) {
         this.store.dispatch(
           ExpensesActions.updateExpense({
             id: this.data.expense.id,
             expense: expenseData,
-          })
-        );
+          }),
+        )
       } else {
         this.store.dispatch(
           ExpensesActions.createExpense({
             expense: expenseData,
-          })
-        );
+          }),
+        )
       }
 
-      this.dialogRef.close(true);
+      this.dialogRef.close(true)
     }
   }
 
   onCancel(): void {
-    this.dialogRef.close(false);
+    this.dialogRef.close(false)
   }
 }
