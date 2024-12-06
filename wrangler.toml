@@ -21,5 +21,10 @@ NODE_VERSION = "20.x"
 NODE_ENV = "production"
 NODE_VERSION = "20.x"
 
+[[env.production.kv_namespaces]]
+binding = "EXPENSES_KV"
+id = "8ee394822c6748a2b698b0f1c47e7167"
+preview_id = "8d2f65ed84ce4c0a9dd10e0091d9b806"
+
 
 
