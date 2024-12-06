@@ -46,8 +46,6 @@ export const onRequest = async (context: {
       'Content-Type': 'application/json'
     }
 
-    const now = Date.now()
-
     switch (request.method) {
       case 'GET': {
         if (isListEndpoint) {
@@ -84,15 +82,14 @@ export const onRequest = async (context: {
 
       case 'POST': {
         const requestJson = await request.json() as IExpense
+        const now = Date.now()
 
         // Get the current list of expense IDs
         const keysJson = await env.EXPENSES_KV.get('_keys')
         const keys = keysJson ? JSON.parse(keysJson) : []
         
-        // Determine the next ID by finding the highest current ID and incrementing it
-        const keysInt = keys.length > 0 ? keys.map((key: string) => parseInt(key.replace('exp_', ''))) : [0]
-        const currentMaxId = Math.max(...keysInt)
-        const nextId = currentMaxId + 1
+        // Determine the next ID
+        const nextId = keys.length > 0 ? Math.max(...keys.map((key: string) => parseInt(key.replace('exp_', '')))) + 1 : 1
         const nowIso = new Date(now).toISOString()
 
         const expenseData: IExpenseRow = {
@@ -105,8 +102,8 @@ export const onRequest = async (context: {
           }
         }
 
-        try{
-          await env.EXPENSES_KV.put(expenseData.key, JSON.stringify({ value: expenseData.value }))
+        try {
+          await env.EXPENSES_KV.put(expenseData.key, JSON.stringify(expenseData.value))
 
           // Update the list of expense keys
           keys.push(expenseData.key)
@@ -119,7 +116,6 @@ export const onRequest = async (context: {
           )
         }
 
-        // Store the expense
         return new Response(JSON.stringify(expenseData.value), {
           status: 201,
           headers: jsonHeaders
@@ -139,10 +135,12 @@ export const onRequest = async (context: {
         }
 
         const existingExpense = JSON.parse(existingExpenseJson)
-        const updatedAt = new Date(now).toISOString()
-        const updatedExpense = { ...existingExpense, ...updates, updatedAt }
+        const updatedExpense = { 
+          ...existingExpense, 
+          ...updates, 
+          updatedAt: new Date().toISOString() 
+        }
         
-        // Store updated expense
         await env.EXPENSES_KV.put(`exp_${id}`, JSON.stringify(updatedExpense))
 
         return new Response(JSON.stringify(updatedExpense), {
@@ -151,14 +149,21 @@ export const onRequest = async (context: {
       }
 
       case 'DELETE': {
-        // Delete the expense
+        if (!id) {
+          return new Response(
+            JSON.stringify({ error: 'Expense ID is required' }),
+            { status: 400, headers: jsonHeaders }
+          )
+        }
+
+        // Delete the expense from KV store
         await env.EXPENSES_KV.delete(`exp_${id}`)
 
         // Update the list of expense IDs
         const keysJson = await env.EXPENSES_KV.get('_keys')
         if (keysJson) {
           const keys = JSON.parse(keysJson)
-          const updatedKeys = keys.filter((key: string) => key.replace('exp_', '') !== id)
+          const updatedKeys = keys.filter((key: string) => key !== `exp_${id}`)
           await env.EXPENSES_KV.put('_keys', JSON.stringify(updatedKeys))
         }
 

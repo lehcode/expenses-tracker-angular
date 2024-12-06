@@ -21,7 +21,7 @@ export async function errorHandling(context) {
         headers: {
           ...corsHeaders,
           'Access-Control-Allow-Origin': context.request.headers.get('Origin') || '*',
-          'Access-Control-Allow-Methods': 'OPTIONS',
+          'Access-Control-Allow-Methods': 'OPTIONS, GET, POST, PUT, DELETE',
           'Access-Control-Allow-Credentials': 'true',
         }
       });
@@ -38,33 +38,35 @@ export async function errorHandling(context) {
       }
 
       switch (request.method) {
-        case 'DELETE': {
-          if (!id) {
-            return new Response(JSON.stringify({ error: 'Expense ID required' }), {
-              status: 400,
-              headers: jsonHeaders
-            })
-          }
+        // case 'DELETE': {
+        //   if (!id) {
+        //     return new Response(JSON.stringify({ error: 'Expense ID required' }), {
+        //       status: 400,
+        //       headers: jsonHeaders
+        //     })
+        //   }
 
-          const expensesJson = await env.EXPENSES_KV.get('expenses')
-          const expenses = expensesJson ? JSON.parse(expensesJson) : []
+        //   const expensesJson = await env.EXPENSES_KV.get('expenses')
+        //   const expenses = expensesJson ? JSON.parse(expensesJson) : []
 
-          const bookExists = expenses.some((expense: IExpense) => expense.id === parseInt(id))
-          if (!bookExists) {
-            return new Response(JSON.stringify({ error: 'Record not found' }), {
-              status: 404,
-              headers: jsonHeaders
-            })
-          }
+        //   console.log("Expenses:", expenses)
 
-          const filteredBooks = expenses.filter((expense: IExpense) => expense.id !== parseInt(id))
-          await env.EXPENSES_KV.put('expenses', JSON.stringify(filteredBooks))
+        //   const exists = expenses.some((expense: IExpense) => expense.id === parseInt(id))
+        //   if (!exists) {
+        //     return new Response(JSON.stringify({ error: 'Record not found' }), {
+        //       status: 404,
+        //       headers: jsonHeaders
+        //     })
+        //   }
 
-          return new Response(null, {
-            status: 204,
-            headers: corsHeaders // No Content-Type needed for 204
-          })
-        }
+        //   const filtered = expenses.filter((expense: IExpense) => expense.id !== parseInt(id))
+        //   await env.EXPENSES_KV.put('expenses', JSON.stringify(filtered))
+
+        //   return new Response(null, {
+        //     status: 204,
+        //     headers: corsHeaders // No Content-Type needed for 204
+        //   })
+        // }
 
         case 'PUT': {
           if (!id) {
