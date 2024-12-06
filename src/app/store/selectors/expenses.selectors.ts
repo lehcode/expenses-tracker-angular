@@ -74,12 +74,15 @@ export const selectTotalBalance = createSelector(selectAllExpenses, (expenses) =
   }, 0),
 )
 
-export const selectTotalIncome = createSelector(selectAllExpenses, (expenses) =>
-  expenses.filter((expense) => expense.type === 'INCOME').reduce((total, expense) => total + expense.amount, 0),
-)
+export const selectTotalIncome = createSelector(selectAllExpenses, (expenses) => {
+  const filtered = expenses.filter((expense) => expense.type === 'INCOME')
+  return filtered.reduce((total, expense) => total + expense.amount, 0)
+})
 
-export const selectTotalExpenses = createSelector(selectAllExpenses, (expenses) =>
-  expenses.filter((expense) => expense.type === 'EXPENSE').reduce((total, expense) => total + expense.amount, 0),
+export const selectTotalExpenses = createSelector(selectAllExpenses, (expenses) => {
+  const filtered = expenses.filter((expense) => expense.type === 'EXPENSE')
+  return filtered.reduce((total, expense) => total + expense.amount, 0)
+}
 )
 
 export const selectCategoryTotals = createSelector(selectAllExpenses, selectCategories, (expenses, categories) => {
@@ -100,5 +103,8 @@ export const selectRecentTransactions = createSelector(selectAllExpenses, (expen
     .slice(0, 5)
 })
 
-export const selectExpensesLoading = createSelector(selectExpensesState, (state: IExpensesState) => state.loading ?? false)
+export const selectExpensesLoading = createSelector(
+  selectExpensesState,
+  (state: IExpensesState) => state.loading ?? false,
+)
 export const selectExpensesError = createSelector(selectExpensesState, (state: IExpensesState) => state.error ?? null)

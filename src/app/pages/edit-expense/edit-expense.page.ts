@@ -5,7 +5,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import { Store } from '@ngrx/store'
 
 import { ExpenseFormComponent } from '../../components/expenses/expense-form.component'
-import { IExpense, IExpenseCategory } from '../../interfaces/expenses.interfaces'
+import { IExpense } from '../../interfaces/expenses.interfaces'
+import { emptyExpense } from '../../shared/hydrate'
 import { ExpensesActions } from '../../store/actions/expenses.actions'
 
 @Component({
@@ -20,7 +21,7 @@ import { ExpensesActions } from '../../store/actions/expenses.actions'
         </a>
       </div>
 
-      <app-expense-form [expense]="expense" (saveExpense)="onSave($event)" (cancelEdit)="onCancel()"></app-expense-form>
+      <app-expense-form [selectedExpense]="expense" (cancelEdit)="onCancel()"></app-expense-form>
     </div>
   `,
   imports: [ExpenseFormComponent, MatButtonModule, MatIconModule, RouterLink],
@@ -28,19 +29,7 @@ import { ExpensesActions } from '../../store/actions/expenses.actions'
 })
 export class ExpenseFormPageComponent implements OnInit {
   isEditMode = false
-  expense: IExpense | null = {
-    id: '',
-    name: '',
-    amount: 0,
-    type: 'INCOME',
-    category: {
-      id: '',
-      name: '',
-    } as IExpenseCategory,
-    date: '',
-    createdAt: '',
-    updatedAt: '',
-  }
+  expense: Omit<IExpense, 'createdAt' | 'updatedAt'> = emptyExpense
 
   constructor(
     private route: ActivatedRoute,
@@ -56,23 +45,24 @@ export class ExpenseFormPageComponent implements OnInit {
     }
   }
 
-  onSave(expense: Partial<IExpense>) {
-    if (this.isEditMode && this.expense?.id) {
-      this.store.dispatch(
-        ExpensesActions.updateExpense({
-          id: this.expense.id,
-          expense,
-        }),
-      )
-    } else {
-      this.store.dispatch(
-        ExpensesActions.createExpense({
-          expense: expense as Omit<IExpense, 'id' | 'createdAt' | 'updatedAt'>,
-        }),
-      )
-    }
-    this.router.navigate(['/expenses'])
-  }
+  // onSave(expense: Partial<IExpense>) {
+  //   if (this.isEditMode && this.expense?.id) {
+  //     this.store.dispatch(
+  //       ExpensesActions.updateExpense({
+  //         id: this.expense.id,
+  //         expense,
+  //       }),
+  //     )
+  //   } else {
+  //     this.store.dispatch(
+  //       ExpensesActions.createExpense({
+  //         expense: expense as Omit<IExpense, 'id' | 'createdAt' | 'updatedAt'>,
+  //       }),
+  //     )
+  //   }
+    
+  //   this.router.navigate(['/expenses'])
+  // }
 
   onCancel() {
     this.router.navigate(['/expenses'])

@@ -3,7 +3,7 @@ import { IExpense } from "../src/app/interfaces/expenses.interfaces"
 import { corsHeaders } from "./constants"
 
 export async function errorHandling(context) {
-  try {
+  
     // Log incoming request details
     // console.log('Incoming Request: _middleware.ts log', {
     //   method: context.request.method,
@@ -19,9 +19,9 @@ export async function errorHandling(context) {
       return new Response(null, {
         status: 204, // No content for OPTIONS
         headers: {
+          ...corsHeaders,
           'Access-Control-Allow-Origin': context.request.headers.get('Origin') || '*',
-          // 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Accept, Authorization',
+          'Access-Control-Allow-Methods': 'OPTIONS',
           'Access-Control-Allow-Credentials': 'true',
         }
       });
@@ -101,17 +101,14 @@ export async function errorHandling(context) {
         return await context.next()
 
       }
-    } catch (kvError) {
-      console.error('KV Error:', kvError)
-    }
-  } catch (err) {
-    console.error('Middleware Error:', err)
+    } catch (error) {
+      console.error('KV Error:', error)
 
     // Return a proper error response with CORS headers
     return new Response(
       JSON.stringify({
         error: 'Internal Server Error',
-        message: err.message
+        message: error.message
       }),
       {
         status: 500,
@@ -121,7 +118,7 @@ export async function errorHandling(context) {
         }
       }
     )
-  }
+    }
 }
 
 export const onRequest = [errorHandling]

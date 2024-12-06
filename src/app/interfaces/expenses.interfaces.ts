@@ -49,12 +49,15 @@ export interface IExpensesState {
   error: string | null
 }
 
-export interface IExpenseRow {
-  value: IExpense
-  metadata: Record<string, string>
+interface IKVRow {
+  key: string
+  value: IExpense | IExpenseCategory
 }
 
-export interface IExpenseCategoryRow {
+export interface IExpenseCategoryRow extends IKVRow {
   value: IExpenseCategory
-  metadata: Record<string, string>
 }
+
+export interface IExpenseRow extends IKVRow {
+  value: IExpense
+} 

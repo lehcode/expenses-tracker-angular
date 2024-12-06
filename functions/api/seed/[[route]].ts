@@ -34,7 +34,7 @@ export const onRequest = async (context: { env: { EXPENSES_KV: KVNamespace } }):
     }
 
     // Store all expenses IDs in a list for easy retrieval
-    await EXPENSES_KV.put('_ids', JSON.stringify(MOCK_EXPENSES.map((expense) => `exp_${expense.value.id}`)))
+    await EXPENSES_KV.put('_keys', JSON.stringify(MOCK_EXPENSES.map((expense) => `exp_${expense.value.id}`)))
 
     // Store categories
     for (const category of MOCK_CATEGORIES) {

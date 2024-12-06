@@ -9,11 +9,7 @@ export const EXPENSES_ROUTES: Routes = [
     component: ExpensesViewComponent, 
   },
   {
-    path: 'new',
-    component: ExpenseFormComponent,
-  },
-  {
-    path: 'edit/:id',
+    path: ':id',
     component: ExpenseFormComponent,
   },
 ];

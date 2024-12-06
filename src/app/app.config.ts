@@ -1,5 +1,6 @@
 import { provideHttpClient } from '@angular/common/http'
 import { ApplicationConfig, isDevMode } from '@angular/core'
+import { MAT_DATE_LOCALE } from '@angular/material/core'
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async'
 import { provideRouter, withComponentInputBinding, withRouterConfig } from '@angular/router'
 import { provideEffects } from '@ngrx/effects'
@@ -34,6 +35,10 @@ export const appConfig: ApplicationConfig = {
         onSameUrlNavigation: 'reload',
         paramsInheritanceStrategy: 'always'
       })
-    )
+    ),
+    {
+      provide: MAT_DATE_LOCALE,
+      useValue: 'en-US'
+    }
   ],
 }

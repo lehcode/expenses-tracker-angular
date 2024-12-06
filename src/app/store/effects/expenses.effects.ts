@@ -105,18 +105,18 @@ export class ExpensesEffects {
   })
 
   // Load Summary
-  loadSummary$ = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(ExpensesActions.loadSummary),
-      withLatestFrom(this.store.select(selectFilters)),
-      switchMap(([action, storeFilters]) =>
-        this.expensesService.getSummary({ ...storeFilters, ...action.filters }).pipe(
-          map(summary => ExpensesActions.loadSummarySuccess({ summary })),
-          catchError(error => of(ExpensesActions.loadSummaryFailure({ error: error.message })))
-        )
-      )
-    )
-  })
+  // loadSummary$ = createEffect(() => {
+  //   return this.actions$.pipe(
+  //     ofType(ExpensesActions.loadSummary),
+  //     withLatestFrom(this.store.select(selectFilters)),
+  //     switchMap(([action, storeFilters]) =>
+  //       this.expensesService.getSummary({ ...storeFilters, ...action.filters }).pipe(
+  //         map(summary => ExpensesActions.loadSummarySuccess({ summary })),
+  //         catchError(error => of(ExpensesActions.loadSummaryFailure({ error: error.message })))
+  //       )
+  //     )
+  //   )
+  // })
 
   // Create Category
   createCategory$ = createEffect(() => {

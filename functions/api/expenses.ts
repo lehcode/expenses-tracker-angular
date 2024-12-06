@@ -1,4 +1,5 @@
 import { Env } from '../../src/app/interfaces/env.interface'
+import { IExpense, IExpenseRow } from '../../src/app/interfaces/expenses.interfaces'
 import { corsHeaders } from '../constants'
 
 export const onRequest = async (context: { 
@@ -45,11 +46,13 @@ export const onRequest = async (context: {
       'Content-Type': 'application/json'
     }
 
+    const now = Date.now()
+
     switch (request.method) {
       case 'GET': {
         if (isListEndpoint) {
           // Get all expense IDs
-          const keysJson = await env.EXPENSES_KV.get('_ids')
+          const keysJson = await env.EXPENSES_KV.get('_keys')
           const keys = keysJson ? JSON.parse(keysJson) : []
 
           // Fetch all expenses
@@ -80,19 +83,44 @@ export const onRequest = async (context: {
       }
 
       case 'POST': {
-        const expense = await request.json()
-        const expenseId = expense.id
+        const requestJson = await request.json() as IExpense
+
+        // Get the current list of expense IDs
+        const keysJson = await env.EXPENSES_KV.get('_keys')
+        const keys = keysJson ? JSON.parse(keysJson) : []
+        
+        // Determine the next ID by finding the highest current ID and incrementing it
+        const keysInt = keys.length > 0 ? keys.map((key: string) => parseInt(key.replace('exp_', ''))) : [0]
+        const currentMaxId = Math.max(...keysInt)
+        const nextId = currentMaxId + 1
+        const nowIso = new Date(now).toISOString()
+
+        const expenseData: IExpenseRow = {
+          key: `exp_${nextId}`,
+          value: {
+            ...requestJson,
+            id: nextId,
+            createdAt: nowIso,
+            updatedAt: nowIso
+          }
+        }
+
+        try{
+          await env.EXPENSES_KV.put(expenseData.key, JSON.stringify({ value: expenseData.value }))
+
+          // Update the list of expense keys
+          keys.push(expenseData.key)
+          await env.EXPENSES_KV.put('_keys', JSON.stringify(keys))
+        } catch (error) {
+          console.error(error)
+          return new Response(
+            JSON.stringify({ error: 'Error storing expense' }),
+            { status: 500, headers: jsonHeaders }
+          )
+        }
 
         // Store the expense
-        await env.EXPENSES_KV.put(`exp_${expenseId}`, JSON.stringify(expense))
-
-        // Update the list of expense IDs
-        const idsJson = await env.EXPENSES_KV.get('_ids')
-        const ids = idsJson ? JSON.parse(idsJson) : []
-        ids.push(expenseId)
-        await env.EXPENSES_KV.put('_ids', JSON.stringify(ids))
-
-        return new Response(JSON.stringify(expense), {
+        return new Response(JSON.stringify(expenseData.value), {
           status: 201,
           headers: jsonHeaders
         })
@@ -111,7 +139,8 @@ export const onRequest = async (context: {
         }
 
         const existingExpense = JSON.parse(existingExpenseJson)
-        const updatedExpense = { ...existingExpense, ...updates }
+        const updatedAt = new Date(now).toISOString()
+        const updatedExpense = { ...existingExpense, ...updates, updatedAt }
         
         // Store updated expense
         await env.EXPENSES_KV.put(`exp_${id}`, JSON.stringify(updatedExpense))
@@ -126,11 +155,11 @@ export const onRequest = async (context: {
         await env.EXPENSES_KV.delete(`exp_${id}`)
 
         // Update the list of expense IDs
-        const idsJson = await env.EXPENSES_KV.get('_ids')
-        if (idsJson) {
-          const ids = JSON.parse(idsJson)
-          const updatedIds = ids.filter((expenseId: string) => expenseId !== id)
-          await env.EXPENSES_KV.put('_ids', JSON.stringify(updatedIds))
+        const keysJson = await env.EXPENSES_KV.get('_keys')
+        if (keysJson) {
+          const keys = JSON.parse(keysJson)
+          const updatedKeys = keys.filter((key: string) => key.replace('exp_', '') !== id)
+          await env.EXPENSES_KV.put('_keys', JSON.stringify(updatedKeys))
         }
 
         return new Response(null, {
