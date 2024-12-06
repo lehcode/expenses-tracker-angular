@@ -19,6 +19,7 @@ NODE_VERSION = "20.x"
 
 [env.production.vars]
 NODE_ENV = "production"
+NODE_VERSION = "20.x"
 
 
 
